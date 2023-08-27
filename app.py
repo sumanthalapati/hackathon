@@ -1,8 +1,27 @@
-from flask import Flask, request, jsonify
+from flask import Flask, Response, request, jsonify
 import content_utils 
 import selenium_utils
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+@app.route('/')
+def hello():
+    return "Hello, World!"
+
+
+@app.after_request
+def set_referrer_policy(response):
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    return response
+
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        res = Response()
+        res.headers['X-Content-Type-Options'] = '*'
+        return res
 
 @app.route('/analyze', methods=['POST'])
 def analyze_website():
@@ -43,3 +62,4 @@ def analyze_website():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
